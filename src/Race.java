@@ -49,8 +49,8 @@ public class Race
         level = 3;
         try
         {
-            background = ImageIO.read(new File("space.png"));
-            player = ImageIO.read(new File("race_tracl.png"));
+            background = ImageIO.read(new File("race_track.png"));
+            player = ImageIO.read(new File("countach blue.png"));
         }
         catch (IOException ioe)
         {
