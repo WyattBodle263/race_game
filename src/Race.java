@@ -350,7 +350,6 @@ public class Race
     private static class StartGame implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             endgame = true;
-            enemyAlive = true;
             upPressed = false;
             downPressed = false;
             leftPressed = false;
@@ -641,7 +640,7 @@ public class Race
     public static void main(String[] args) {
         setup();
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setSize(501, 585);
+        appFrame.setSize(1000, 1000);
 
         JPanel myPanel = new JPanel();
 
@@ -667,7 +666,6 @@ public class Race
     }
 
     private static Boolean endgame;
-    private static Boolean enemyAlive;
     private static BufferedImage background;
     private static BufferedImage player;
     private static Boolean upPressed;
