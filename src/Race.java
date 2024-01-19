@@ -348,7 +348,7 @@ public class Race
     {
         Graphics g = appFrame.getGraphics();
         Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(p2).filter(player, null), (int) (p2.getX() + 0.5), (int) (p2.getY() + 0.5), null);
+        g2D.drawImage(rotateImageObject(p2).filter(player2, null), (int) (p2.getX() + 0.5), (int) (p2.getY() + 0.5), null);
     }
     private static class KeyPressed extends AbstractAction {
         public KeyPressed() {
