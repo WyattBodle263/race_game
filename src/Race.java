@@ -34,7 +34,7 @@ public class Race
 
     public static void setup()
     {
-        appFrame = new JFrame("Asteroids");
+        appFrame = new JFrame("Lamborghini Countach Faceoff");
         XOFFSET = 0;
         YOFFSET = 40;
         WINWIDTH = 500;
@@ -42,8 +42,12 @@ public class Race
         pi = 3.14159265358979;
         twoPi = 2.0 * 3.14159265358979;
         endgame = false;
-        p1width = 20; // 18.5;
-        p1height = 28; // 25;
+        p1width = 25; // 18.5;
+        p1height = 25; // 25;
+        p2originalX = (double) XOFFSET + ((double) WINWIDTH / 2.0);
+        p2originalY = (double) YOFFSET + ((double) WINHEIGHT / 2.0) / 2.0;
+        p2width = 25; // 18.5;
+        p2height = 25; // 25;
         p1originalX = (double) XOFFSET + ((double) WINWIDTH / 2.0);
         p1originalY = (double) YOFFSET + ((double) WINHEIGHT / 2.0) / 2.0;
         level = 3;
@@ -51,6 +55,7 @@ public class Race
         {
             background = ImageIO.read(new File("race_track.png"));
             player = ImageIO.read(new File("countach blue.png"));
+            player2 = ImageIO.read(new File("countach purple.png"));
         }
         catch (IOException ioe)
         {
@@ -65,10 +70,11 @@ public class Race
             {
                 backgroundDraw();
                 playerDraw();
+                player2Draw();
 
                 try
                 {
-                    Thread.sleep(32);
+                    Thread.sleep(100);
                 }
                 catch (InterruptedException e)
                 {
@@ -128,6 +134,62 @@ public class Race
 
                 p1.move(p1velocity * Math.cos(p1.getAngle() - pi / 2.0), p1velocity * Math.sin(p1.getAngle() - pi / 2.0));
                 p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT);
+            }
+        }
+        private double velocitystep;
+        private double rotatestep;
+    }
+    private static class Player2Mover implements Runnable
+    {
+        public Player2Mover()
+        {
+            velocitystep = 0.01;
+            rotatestep = 0.01;
+        }
+
+        public void run()
+        {
+            while (endgame == false)
+            {
+                try
+                {
+                    Thread.sleep(10);
+                }
+                catch (InterruptedException e)
+                {
+                }
+                if (wPressed == true)
+                {
+                    p2velocity = p2velocity + velocitystep;
+                }
+                if (sPressed == true)
+                {
+                    p2velocity = p2velocity - velocitystep;
+                }
+                if (aPressed == true)
+                {
+                    if (p2velocity < 0)
+                    {
+                        p2.rotate(rotatestep);
+                    } else
+                    {
+                        p2.rotate(-rotatestep);
+                    }
+                }
+                if (dPressed == true)
+                {
+                    if (p2velocity < 0)
+                    {
+                        p2.rotate(-rotatestep);
+                    }
+                    else
+                    {
+                        p2.rotate(rotatestep);
+                    }
+                }
+
+                p2.move(p2velocity * Math.cos(p2.getAngle() - pi / 2.0), p2velocity * Math.sin(p2.getAngle() - pi / 2.0));
+                p2.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT);
             }
         }
         private double velocitystep;
@@ -282,6 +344,12 @@ public class Race
         Graphics2D g2D = (Graphics2D) g;
         g2D.drawImage(rotateImageObject(p1).filter(player, null), (int) (p1.getX() + 0.5), (int) (p1.getY() + 0.5), null);
     }
+    private static void player2Draw()
+    {
+        Graphics g = appFrame.getGraphics();
+        Graphics2D g2D = (Graphics2D) g;
+        g2D.drawImage(rotateImageObject(p2).filter(player, null), (int) (p2.getX() + 0.5), (int) (p2.getY() + 0.5), null);
+    }
     private static class KeyPressed extends AbstractAction {
         public KeyPressed() {
             action = "";
@@ -304,11 +372,20 @@ public class Race
             if (action.equals("RIGHT")) {
                 rightPressed = true;
             }
-            if (action.equals("F")) {
-                firePressed = true;
+            if (action.equals("W")) {
+                wPressed = true;
             }
-        }
+            if (action.equals("S")) {
+                sPressed = true;
+            }
+            if (action.equals("A")) {
+                aPressed = true;
+            }
+            if (action.equals("D")) {
+                dPressed = true;
+            }
 
+        }
         private String action;
     }
 
@@ -334,8 +411,17 @@ public class Race
             if (action.equals("RIGHT")) {
                 rightPressed = false;
             }
-            if (action.equals("F")) {
-                firePressed = false;
+            if (action.equals("W")) {
+                wPressed = false;
+            }
+            if (action.equals("S")) {
+                sPressed = false;
+            }
+            if (action.equals("A")) {
+                aPressed = false;
+            }
+            if (action.equals("D")) {
+                dPressed = false;
             }
         }
 
@@ -354,9 +440,17 @@ public class Race
             downPressed = false;
             leftPressed = false;
             rightPressed = false;
-            firePressed = false;
+            wPressed = false;
+            sPressed = false;
+            aPressed = false;
+            dPressed = false;
+
             p1 = new ImageObject(p1originalX, p1originalY, p1width, p1height, 0.0);
+            p2 = new ImageObject(p2originalX, p2originalY, p2width, p2height, 0.0);
+
             p1velocity = 0.0;
+            p2velocity = 0.0;
+
             try {
                 Thread.sleep(50);
             } catch (InterruptedException ie) {
@@ -367,10 +461,13 @@ public class Race
             Thread t2 = new Thread(new PlayerMover());
             Thread t3 = new Thread(new CollisionChecker());
             Thread t4 = new Thread(new WinChecker());
+            Thread t5 = new Thread(new Player2Mover());
+
             t1.start();
             t2.start();
             t3.start();
             t4.start();
+            t5.start();
         }
     }
     private static class GameLevel implements ActionListener {
@@ -659,7 +756,10 @@ public class Race
         bindKey(myPanel, "DOWN");
         bindKey(myPanel, "LEFT");
         bindKey(myPanel, "RIGHT");
-        bindKey(myPanel, "F");
+        bindKey(myPanel, "W");
+        bindKey(myPanel, "S");
+        bindKey(myPanel, "A");
+        bindKey(myPanel, "D");
 
         appFrame.getContentPane().add(myPanel, "South");
         appFrame.setVisible(true);
@@ -668,17 +768,28 @@ public class Race
     private static Boolean endgame;
     private static BufferedImage background;
     private static BufferedImage player;
+    private static BufferedImage player2;
     private static Boolean upPressed;
     private static Boolean downPressed;
     private static Boolean leftPressed;
     private static Boolean rightPressed;
-    private static Boolean firePressed;
+    private static Boolean wPressed;
+    private static Boolean sPressed;
+    private static Boolean aPressed;
+    private static Boolean dPressed;
     private static ImageObject p1;
+    private static ImageObject p2;
+
     private static double p1width;
     private static double p1height;
     private static double p1originalX;
     private static double p1originalY;
     private static double p1velocity;
+    private static double p2width;
+    private static double p2height;
+    private static double p2originalX;
+    private static double p2originalY;
+    private static double p2velocity;
 
     private static int level;
 
