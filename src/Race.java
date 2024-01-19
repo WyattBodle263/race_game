@@ -111,8 +111,6 @@ public class Race
                 if (downPressed == true)
                 {
                     p1velocity = p1velocity - velocitystep;
-                }else{
-                    p1velocity = p1velocity + (p1velocity > 0 ? (velocitystep*0.75) :0);
                 }
                 if (leftPressed == true)
                 {
