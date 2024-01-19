@@ -105,6 +105,8 @@ public class Race
                 if (upPressed == true)
                 {
                     p1velocity = p1velocity + velocitystep;
+                }else{
+                    p1velocity = p1velocity + (p1velocity > 0 ? -velocitystep :0);
                 }
                 if (downPressed == true)
                 {
