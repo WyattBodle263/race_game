@@ -640,7 +640,7 @@ public class Race
     public static void main(String[] args) {
         setup();
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setSize(1000, 1000);
+        appFrame.setSize(565, 800);
 
         JPanel myPanel = new JPanel();
 
