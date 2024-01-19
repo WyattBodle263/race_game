@@ -42,8 +42,8 @@ public class Race
         pi = 3.14159265358979;
         twoPi = 2.0 * 3.14159265358979;
         endgame = false;
-        p1width = 25; // 18.5;
-        p1height = 25; // 25;
+        p1width = 35; // 18.5;
+        p1height = 50; // 25;
         p1originalX = (double) XOFFSET + ((double) WINWIDTH / 2.0);
         p1originalY = (double) YOFFSET + ((double) WINHEIGHT / 2.0) / 2.0;
         level = 3;
@@ -68,7 +68,7 @@ public class Race
 
                 try
                 {
-                    Thread.sleep(32);
+                    Thread.sleep(100);
                 }
                 catch (InterruptedException e)
                 {
