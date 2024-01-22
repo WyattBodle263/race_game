@@ -88,7 +88,7 @@ public class Race
         public PlayerMover()
         {
             velocitystep = 0.01;
-            rotatestep = 0.01;
+            rotatestep = 0.05;
         }
 
         public void run()
@@ -102,8 +102,9 @@ public class Race
                 catch (InterruptedException e)
                 {
                 }
-                if (upPressed == true)
+                if (upPressed == true && p1velocity <= 2)
                 {
+                    System.out.println(p1velocity);
                     p1velocity = p1velocity + velocitystep;
                 }else{
                     p1velocity = p1velocity + (p1velocity > 0 ? (-velocitystep*0.75) :0);
@@ -112,7 +113,7 @@ public class Race
                 {
                     p1velocity = p1velocity - velocitystep;
                 }else{
-                    p1velocity = p1velocity - (p1velocity > 0 ? (-velocitystep*0.75) :0);
+                    p1velocity = p1velocity - (p1velocity < 0 ? (-velocitystep*0.75) :0);
                 }
                 if (leftPressed == true)
                 {
@@ -148,7 +149,7 @@ public class Race
         public Player2Mover()
         {
             velocitystep = 0.01;
-            rotatestep = 0.01;
+            rotatestep = 0.5;
         }
 
         public void run()
@@ -162,13 +163,18 @@ public class Race
                 catch (InterruptedException e)
                 {
                 }
-                if (wPressed == true)
+                if (wPressed == true && p2velocity <= 2)
                 {
+                    System.out.println(p1velocity);
                     p2velocity = p2velocity + velocitystep;
+                }else{
+                    p2velocity = p2velocity + (p2velocity > 0 ? (-velocitystep*0.75) :0);
                 }
                 if (sPressed == true)
                 {
                     p2velocity = p2velocity - velocitystep;
+                }else{
+                    p2velocity = p2velocity - (p1velocity < 0 ? (-velocitystep*0.75) :0);
                 }
                 if (aPressed == true)
                 {
@@ -741,7 +747,7 @@ public class Race
     public static void main(String[] args) {
         setup();
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setSize(565, 800);
+        appFrame.setSize(565, 700);
 
         JPanel myPanel = new JPanel();
 
