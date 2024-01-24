@@ -4,7 +4,6 @@
 import java.util.Vector ;
 import java.util.Random;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JButton;
@@ -18,8 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -37,8 +34,8 @@ public class Race
         appFrame = new JFrame("Lamborghini Countach Faceoff");
         XOFFSET = 0;
         YOFFSET = 40;
-        WINWIDTH = 500;
-        WINHEIGHT = 500;
+        WINWIDTH = 470;
+        WINHEIGHT = 635;
         pi = 3.14159265358979;
         twoPi = 2.0 * 3.14159265358979;
         endgame = false;
@@ -54,6 +51,7 @@ public class Race
         try
         {
             background = ImageIO.read(new File("race_track.png"));
+//            backgroundOverlay = ImageIO.read(new File("race_track.png"));
             player = ImageIO.read(new File("countach blue.png"));
             player2 = ImageIO.read(new File("countach purple.png"));
         }
@@ -138,7 +136,9 @@ public class Race
                 }
 
                 p1.move(p1velocity * Math.cos(p1.getAngle() - pi / 2.0), p1velocity * Math.sin(p1.getAngle() - pi / 2.0));
-                p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT);
+                if(p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
+                    p1velocity = 0.0;
+                }
             }
         }
         private double velocitystep;
@@ -149,7 +149,7 @@ public class Race
         public Player2Mover()
         {
             velocitystep = 0.01;
-            rotatestep = 0.5;
+            rotatestep = 0.05;
         }
 
         public void run()
@@ -199,7 +199,9 @@ public class Race
                 }
 
                 p2.move(p2velocity * Math.cos(p2.getAngle() - pi / 2.0), p2velocity * Math.sin(p2.getAngle() - pi / 2.0));
-                p2.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT);
+                if(p2.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
+                    p2velocity = 0.0;
+                }
             }
         }
         private double velocitystep;
@@ -690,19 +692,25 @@ public class Race
             y = yinput;
         }
 
-        public void screenWrap(double leftEdge, double rightEdge, double topEdge, double bottomEdge) {
+        public boolean screenWrap(double leftEdge, double rightEdge, double topEdge, double bottomEdge) {
+            boolean wrapped = false;
             if (x > rightEdge) {
-                moveto(leftEdge, getY());
+                x = rightEdge -5;
+                wrapped = true;
             }
             if (x < leftEdge) {
-                moveto(rightEdge, getY());
+                x = leftEdge + 5;
+                wrapped = true;
             }
             if (y > bottomEdge) {
-                moveto(getX(), topEdge);
+                y = bottomEdge -5;
+                wrapped = true;
             }
             if (y < topEdge) {
-                moveto(getX(), bottomEdge);
+                y = topEdge +5;
+                wrapped = true;
             }
+            return wrapped;
         }
 
         public void rotate(double angleinput) {
@@ -747,7 +755,7 @@ public class Race
     public static void main(String[] args) {
         setup();
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setSize(565, 700);
+        appFrame.setSize(495, 700);
 
         JPanel myPanel = new JPanel();
 
