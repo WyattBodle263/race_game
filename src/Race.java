@@ -4,13 +4,7 @@
 import java.util.Vector ;
 import java.util.Random;
 import java.time.LocalTime;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import javax.swing.AbstractAction;
-import javax.swing.JComboBox;
+import javax.swing.*;
 import javax.imageio.ImageIO;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,19 +35,20 @@ public class Race
         endgame = false;
         p1width = 25; // 18.5;
         p1height = 25; // 25;
-        p2originalX = (double) XOFFSET + ((double) WINWIDTH / 2.0);
-        p2originalY = (double) YOFFSET + ((double) WINHEIGHT / 2.0) / 2.0;
         p2width = 25; // 18.5;
         p2height = 25; // 25;
-        p1originalX = (double) XOFFSET + ((double) WINWIDTH / 2.0);
-        p1originalY = (double) YOFFSET + ((double) WINHEIGHT / 2.0) / 2.0;
-        level = 3;
+        p1originalX = 98;
+        p1originalY = 350;
+        p2originalX = 80;
+        p2originalY = 400;
+
         try
         {
             background = ImageIO.read(new File("race_track.png"));
-//            backgroundOverlay = ImageIO.read(new File("race_track.png"));
+            backgroundOutline = ImageIO.read(new File("race_track_outline.png"));
             player = ImageIO.read(new File("countach blue.png"));
             player2 = ImageIO.read(new File("countach purple.png"));
+
         }
         catch (IOException ioe)
         {
@@ -102,7 +97,6 @@ public class Race
                 }
                 if (upPressed == true && p1velocity <= 2)
                 {
-                    System.out.println(p1velocity);
                     p1velocity = p1velocity + velocitystep;
                 }else{
                     p1velocity = p1velocity + (p1velocity > 0 ? (-velocitystep*0.75) :0);
@@ -139,6 +133,8 @@ public class Race
                 if(p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
                     p1velocity = 0.0;
                 }
+                System.out.println("p1 x: " + p1.getX());
+                System.out.println("p1 y: " + p1.getY());
             }
         }
         private double velocitystep;
@@ -165,7 +161,6 @@ public class Race
                 }
                 if (wPressed == true && p2velocity <= 2)
                 {
-                    System.out.println(p1velocity);
                     p2velocity = p2velocity + velocitystep;
                 }else{
                     p2velocity = p2velocity + (p2velocity > 0 ? (-velocitystep*0.75) :0);
@@ -212,98 +207,52 @@ public class Race
     {
         public void run()
         {
+            System.out.println("RUNNING COLLISION CHECK");
             Random randomNumbers = new Random(LocalTime.now().getNano());
             while (endgame == false)
             {
                 try
                 {
-//                    // TODO compare all asteroids to all player bullets
-//                    for (int i = 0; i < asteroids.size(); i++)
-//                    {
-//                        for (int j = 0; j < playerBullets.size(); j++)
-//                        {
-//                            if (collisionOccurs(asteroids.elementAt(i), playerBullets.elementAt(j)))
-//                            {
-//                                // delete asteroid, show explosion animation,
-//                                // replace old asteroid with two new, smaller asteroids at the same place, random directions.
-//                                double posX = asteroids.elementAt(i).getX();
-//                                double posY = asteroids.elementAt(i).getY();
-//                                // create explosion!
-//                                explosions.addElement(new ImageObject(posX, posY, 27, 24, 0.0));
-//                                explosionsTimes.addElement(System.currentTimeMillis());
-//                                // create two new asteroids of type 2
-//                                if (asteroidsTypes.elementAt(i) == 1)
-//                                {
-//                                    asteroids.addElement(new ImageObject(posX, posY, ast2width, ast2width, (double) (randomNumbers.nextInt(360))));
-//                                    asteroidsTypes.addElement(2);
-//                                    asteroids.remove(i);
-//                                    asteroidsTypes.remove(i);
-//                                    playerBullets.remove(j);
-//                                    playerBulletsTimes.remove(j);
-//                                }
-//
-//                                // create two new asteroids of type 3
-//                                if (asteroidsTypes.elementAt(i) == 2) {
-//                                    asteroids.addElement(new ImageObject(posX, posY, ast3width, ast3width, (double) (randomNumbers.nextInt(360))));
-//                                    asteroidsTypes.addElement(3);
-//                                    asteroids.remove(i);
-//                                    asteroidsTypes.remove(i);
-//                                    playerBullets.remove(j);
-//                                    playerBulletsTimes.remove(j);
-//                                }
-//                                // delete asteroids
-//                                if (asteroidsTypes.elementAt(i) == 3) {
-//                                    asteroids.remove(i);
-//                                    asteroidsTypes.remove(i);
-//                                    playerBullets.remove(j);
-//                                    playerBulletsTimes.remove(j);
-//                                }
-//                            }
-//                        }
-//                    }
-//                    // compare all asteroids to player
-//                    for (int i = 0; i < asteroids.size(); i++) {
-//                        if (collisionOccurs(asteroids.elementAt(i), p1)
-//                        ) {
-//                            endgame = true;
-//                            System.out.println("Game Over. You Lose!");
-//                        }
-//                    }
-//                    try {
-//                        // compare all player bullets to enemy ship
-//                        for (int i = 0; i < playerBullets.size(); i++) {
-//                            if (collisionOccurs(playerBullets.elementAt(i), enemy) == true) {
-//                                double posX = enemy.getX();
-//                                double posY = enemy.getY();
-//                                // create explosion!
-//                                explosions.addElement(new ImageObject(posX, posY, 27, 24, 0.0));
-//                                explosionsTimes.addElement(System.currentTimeMillis());
-//                                playerBullets.remove(i);
-//                                playerBulletsTimes.remove(i);
-//                                enemyAlive = false;
-//                                enemy = null;
-//                                enemyBullets.clear();
-//                                enemyBulletsTimes.clear();
-//                            }
-//                        }
-//
-//                        // compare enemy ship to player
-//                        if (collisionOccurs(enemy, p1)) {
-//                            endgame = true;
-//                            System.out.println("Game Over. You Lose!");
-//                        }
-//
-//                        // TODO compare all enemy bullets to player
-//                        for (int i = 0; i < enemyBullets.size(); i++) {
-//                            if (collisionOccurs(enemyBullets.elementAt(i), p1)) {
-//                                endgame = true;
-//                                System.out.println("Game Over. You Lose!");
-//                            }
-//                        }
-//                    }
-//                    catch (java.lang.NullPointerException jlnpe)
-//                    {
-//                    }
+                    // TODO compare all asteroids to all player bullets
+                    // compare all asteroids to player
+                    try {
+                        // compare p1 to p2
+                        if (collisionOccurs(p2, p1)) {
+                            double p1X = p1.x;
+                            double p1Y = p1.y;
+                            double p2X = p2.x;
+                            double p2Y = p2.y;
+
+                            System.out.println("YOU HIT Another Player");
+                            player = ImageIO.read(new File("explosions.png"));
+                            player2 = ImageIO.read(new File("explosions.png"));
+                            // Pause for 2 seconds
+                            // Pause all threads for 2 seconds
+                            synchronized (this) {
+                                wait(2000);
+                                p1velocity = 0;
+                                p2velocity = 0;
+                                p1.x = p1X - 25;
+                                p1.y = p1Y;
+                                p2.x = p1X + 25;
+                                p2.y = p1Y;
+                            }
+                            player = ImageIO.read(new File("countach blue.png"));
+                            player2 = ImageIO.read(new File("countach purple.png"));
+
+                        }
+                        // compare p1 to p2
+                        if (collisionOccurs(dirt, p1)) {
+                            System.out.println("YOU HIT Dirt");
+                        }
+                    }
+                    catch (java.lang.NullPointerException jlnpe)
+                    {
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 } catch (java.lang.ArrayIndexOutOfBoundsException jlaioob)
                 {
                 }
@@ -361,6 +310,12 @@ public class Race
         Graphics g = appFrame.getGraphics();
         Graphics2D g2D = (Graphics2D) g;
         g2D.drawImage(rotateImageObject(p2).filter(player2, null), (int) (p2.getX() + 0.5), (int) (p2.getY() + 0.5), null);
+    }
+    private static void dirtDraw()
+    {
+        Graphics g = appFrame.getGraphics();
+        Graphics2D g2D = (Graphics2D) g;
+        g2D.drawImage(rotateImageObject(dirt).filter(backgroundOutline, null), (int) (dirt.getX() + 0.5), (int) (dirt.getY() + 0.5), null);
     }
     private static class KeyPressed extends AbstractAction {
         public KeyPressed() {
@@ -471,48 +426,16 @@ public class Race
             endgame = false;
             Thread t1 = new Thread(new Animate());
             Thread t2 = new Thread(new PlayerMover());
+            Thread t5 = new Thread(new Player2Mover());
             Thread t3 = new Thread(new CollisionChecker());
             Thread t4 = new Thread(new WinChecker());
-            Thread t5 = new Thread(new Player2Mover());
+
 
             t1.start();
             t2.start();
             t3.start();
             t4.start();
             t5.start();
-        }
-    }
-    private static class GameLevel implements ActionListener {
-        public int decodeLevel(String input) {
-            int ret = 3;
-            if (input.equals("One")) {
-                ret = 1;
-            } else if (input.equals("Two")) {
-                ret = 2;
-            } else if (input.equals("Three")) {
-                ret = 3;
-            } else if (input.equals("Four")) {
-                ret = 4;
-            } else if (input.equals("Five")) {
-                ret = 5;
-            } else if (input.equals("Six")) {
-                ret = 6;
-            } else if (input.equals("Seven")) {
-                ret = 7;
-            } else if (input.equals("Eight")) {
-                ret = 8;
-            } else if (input.equals("Nine")) {
-                ret = 9;
-            } else if (input.equals("Ten")) {
-                ret = 10;
-            }
-            return ret;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            JComboBox cb = (JComboBox) e.getSource();
-            String textLevel = (String) cb.getSelectedItem();
-            level = decodeLevel(textLevel);
         }
     }
 
@@ -575,6 +498,7 @@ public class Race
         )) {
             ret = true;
         }
+        System.out.println();
         return ret;
     }
 
@@ -649,14 +573,6 @@ public class Race
                 triangles.addElement(coords.elementAt((i + 3) % coords.size()));
                 triangles.addElement(comX);
                 triangles.addElement(comY);
-            }
-        }
-
-        public void printTriangles() {
-            for (int i = 0; i < triangles.size(); i = i + 6) {
-                System.out.print("p0x: " + triangles.elementAt(i) + ", p0y: " + triangles.elementAt(i + 1));
-                System.out.print("p1x: " + triangles.elementAt(i + 2) + ", p1y: " + triangles.elementAt(i + 3));
-                System.out.println("p2x: " + triangles.elementAt(i + 4) + ", p2y: " + triangles.elementAt(i + 5));
             }
         }
 
@@ -752,6 +668,42 @@ public class Race
         myPanel.getActionMap().put(input + " released", new KeyReleased(input));
     }
 
+    private static class LapNumbers implements ActionListener {
+        public int decodeLevel(String input) {
+            int ret = 3;
+            if (input.equals("One")) {
+                ret = 1;
+            } else if (input.equals("Two")) {
+                ret = 2;
+            } else if (input.equals("Three")) {
+                ret = 3;
+            } else if (input.equals("Four")) {
+                ret = 4;
+            } else if (input.equals("Five")) {
+                ret = 5;
+            } else if (input.equals("Six")) {
+                ret = 6;
+            } else if (input.equals("Seven")) {
+                ret = 7;
+            } else if (input.equals("Eight")) {
+                ret = 8;
+            } else if (input.equals("Nine")) {
+                ret = 9;
+            } else if (input.equals("Ten")) {
+                ret = 10;
+            }
+            return ret;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JComboBox cb = (JComboBox) e.getSource();
+            String textLevel = (String) cb.getSelectedItem();
+            numLaps = decodeLevel(textLevel);
+        }
+    }
+
+
+
     public static void main(String[] args) {
         setup();
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -759,11 +711,13 @@ public class Race
 
         JPanel myPanel = new JPanel();
 
-        String[] levels = {"One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"};
-        JComboBox<String> levelMenu = new JComboBox<String>(levels);
+        String[] numLaps = {"One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"};
+
+        JComboBox<String> levelMenu = new JComboBox<String>(numLaps);
         levelMenu.setSelectedIndex(2);
-        levelMenu.addActionListener(new GameLevel());
+        levelMenu.addActionListener(new LapNumbers());
         myPanel.add(levelMenu);
+
         JButton newGameButton = new JButton("New Game");
         newGameButton.addActionListener(new StartGame());
         myPanel.add(newGameButton);
@@ -785,6 +739,8 @@ public class Race
 
     private static Boolean endgame;
     private static BufferedImage background;
+    private static BufferedImage backgroundOutline;
+
     private static BufferedImage player;
     private static BufferedImage player2;
     private static Boolean upPressed;
@@ -797,7 +753,8 @@ public class Race
     private static Boolean dPressed;
     private static ImageObject p1;
     private static ImageObject p2;
-
+    private static ImageObject dirt;
+    private static int numLaps;
     private static double p1width;
     private static double p1height;
     private static double p1originalX;
@@ -808,9 +765,6 @@ public class Race
     private static double p2originalX;
     private static double p2originalY;
     private static double p2velocity;
-
-    private static int level;
-
     private static int XOFFSET;
     private static int YOFFSET;
     private static int WINWIDTH;
@@ -820,3 +774,5 @@ public class Race
     private static JFrame appFrame;
     private static final int IFW = JComponent.WHEN_IN_FOCUSED_WINDOW;
 }
+
+
