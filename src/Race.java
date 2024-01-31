@@ -37,15 +37,14 @@ public class Race
         p1height = 25; // 25;
         p2width = 25; // 18.5;
         p2height = 25; // 25;
-        p1originalX = 98;
-        p1originalY = 350;
-        p2originalX = 80;
-        p2originalY = 400;
+        p1originalX = 50;
+        p1originalY = 315;
+        p2originalX = 75;
+        p2originalY = 335;
 
         try
         {
             background = ImageIO.read(new File("race_track.png"));
-            backgroundOutline = ImageIO.read(new File("race_track_outline.png"));
             player = ImageIO.read(new File("countach blue.png"));
             player2 = ImageIO.read(new File("countach purple.png"));
 
@@ -81,7 +80,7 @@ public class Race
         public PlayerMover()
         {
             velocitystep = 0.01;
-            rotatestep = 0.05;
+            rotatestep = 0.03;
         }
 
         public void run()
@@ -133,8 +132,8 @@ public class Race
                 if(p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
                     p1velocity = 0.0;
                 }
-                System.out.println("p1 x: " + p1.getX());
-                System.out.println("p1 y: " + p1.getY());
+//                System.out.println("p1 x: " + p1.getX());
+//                System.out.println("p1 y: " + p1.getY());
             }
         }
         private double velocitystep;
@@ -299,23 +298,44 @@ public class Race
         Graphics2D g2D = (Graphics2D) g;
         g2D.drawImage(background, XOFFSET, YOFFSET, null);
     }
-    private static void playerDraw()
-    {
+    private static void playerDraw() {
         Graphics g = appFrame.getGraphics();
         Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(p1).filter(player, null), (int) (p1.getX() + 0.5), (int) (p1.getY() + 0.5), null);
+
+        // Get the RGBA color of the background image at the position of the player
+        int x = (int) (p1.getX() + 0.5);
+        int y = (int) (p1.getY() + 0.5);
+        int color = background.getRGB(x, y);
+        int alpha = (color >> 24) & 0xFF;
+        int red = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
+        int blue = color & 0xFF;
+
+            if (("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 225, 180, 247, 255") || ("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 180, 192, 247, 255")) {
+                p1velocity = 0.08;
+            }
+
+        g2D.drawImage(rotateImageObject(p1).filter(player, null), x, y, null);
     }
-    private static void player2Draw()
-    {
+
+    private static void player2Draw() {
         Graphics g = appFrame.getGraphics();
         Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(p2).filter(player2, null), (int) (p2.getX() + 0.5), (int) (p2.getY() + 0.5), null);
-    }
-    private static void dirtDraw()
-    {
-        Graphics g = appFrame.getGraphics();
-        Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(dirt).filter(backgroundOutline, null), (int) (dirt.getX() + 0.5), (int) (dirt.getY() + 0.5), null);
+
+        // Get the RGBA color of the background image at the position of the player
+        int x = (int) (p2.getX() + 0.5);
+        int y = (int) (p2.getY() + 0.5);
+        int color = background.getRGB(x, y);
+        int alpha = (color >> 24) & 0xFF;
+        int red = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
+        int blue = color & 0xFF;
+
+        if (("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 225, 180, 247, 255") || ("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 180, 192, 247, 255")) {
+            p2velocity = 0.08;
+        }
+
+        g2D.drawImage(rotateImageObject(p2).filter(player2, null), x, y, null);
     }
     private static class KeyPressed extends AbstractAction {
         public KeyPressed() {
@@ -498,7 +518,7 @@ public class Race
         )) {
             ret = true;
         }
-        System.out.println();
+//        System.out.println();
         return ret;
     }
 
@@ -707,7 +727,7 @@ public class Race
     public static void main(String[] args) {
         setup();
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setSize(495, 700);
+        appFrame.setSize(495, 800);
 
         JPanel myPanel = new JPanel();
 
@@ -739,7 +759,6 @@ public class Race
 
     private static Boolean endgame;
     private static BufferedImage background;
-    private static BufferedImage backgroundOutline;
 
     private static BufferedImage player;
     private static BufferedImage player2;
