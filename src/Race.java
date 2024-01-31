@@ -1,778 +1,700 @@
-// Asteroids . java Copyright (C) 2019 Ben Sanders
-// TODO make levels that flow , one to the next . have a score and lives !
 
-import java.util.Vector ;
-import java.util.Random;
-import java.time.LocalTime;
-import javax.swing.*;
-import javax.imageio.ImageIO;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.awt.EventQueue;
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
+import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import java.util.Collections;
+class Wall extends PhysicalObject {
 
-public class Race
-{
-    public Race()
-    {
-        setup();
+    public Wall(final int x, final int y, final int width, final int height) {
+        super(x, y, width, height);
     }
 
-    public static void setup()
-    {
-        appFrame = new JFrame("Lamborghini Countach Faceoff");
-        XOFFSET = 0;
-        YOFFSET = 40;
-        WINWIDTH = 470;
-        WINHEIGHT = 635;
-        pi = 3.14159265358979;
-        twoPi = 2.0 * 3.14159265358979;
-        endgame = false;
-        p1width = 25; // 18.5;
-        p1height = 25; // 25;
-        p2width = 25; // 18.5;
-        p2height = 25; // 25;
-        p1originalX = 98;
-        p1originalY = 350;
-        p2originalX = 80;
-        p2originalY = 400;
-
-        try
-        {
-            background = ImageIO.read(new File("race_track.png"));
-            backgroundOutline = ImageIO.read(new File("race_track_outline.png"));
-            player = ImageIO.read(new File("countach blue.png"));
-            player2 = ImageIO.read(new File("countach purple.png"));
-
-        }
-        catch (IOException ioe)
-        {
-
-        }
+    @Override
+    public void draw(final Graphics2D g2d, final ImageObserver imageObserver) {
+        g2d.fill(getBounds());
     }
-    private static class Animate implements Runnable
-    {
-        public void run()
-        {
-            while (endgame == false)
-            {
-                backgroundDraw();
-                playerDraw();
-                player2Draw();
-
-                try
-                {
-                    Thread.sleep(100);
-                }
-                catch (InterruptedException e)
-                {
-
-                }
-            }
-        }
-    }
-    private static class PlayerMover implements Runnable
-    {
-        public PlayerMover()
-        {
-            velocitystep = 0.01;
-            rotatestep = 0.05;
-        }
-
-        public void run()
-        {
-            while (endgame == false)
-            {
-                try
-                {
-                    Thread.sleep(10);
-                }
-                catch (InterruptedException e)
-                {
-                }
-                if (upPressed == true && p1velocity <= 2)
-                {
-                    p1velocity = p1velocity + velocitystep;
-                }else{
-                    p1velocity = p1velocity + (p1velocity > 0 ? (-velocitystep*0.75) :0);
-                }
-                if (downPressed == true)
-                {
-                    p1velocity = p1velocity - velocitystep;
-                }else{
-                    p1velocity = p1velocity - (p1velocity < 0 ? (-velocitystep*0.75) :0);
-                }
-                if (leftPressed == true)
-                {
-                    if (p1velocity < 0)
-                    {
-                        p1.rotate(rotatestep);
-                    } else
-                    {
-                        p1.rotate(-rotatestep);
-                    }
-                }
-                if (rightPressed == true)
-                {
-                    if (p1velocity < 0)
-                    {
-                        p1.rotate(-rotatestep);
-                    }
-                    else
-                    {
-                        p1.rotate(rotatestep);
-                    }
-                }
-
-                p1.move(p1velocity * Math.cos(p1.getAngle() - pi / 2.0), p1velocity * Math.sin(p1.getAngle() - pi / 2.0));
-                if(p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
-                    p1velocity = 0.0;
-                }
-                System.out.println("p1 x: " + p1.getX());
-                System.out.println("p1 y: " + p1.getY());
-            }
-        }
-        private double velocitystep;
-        private double rotatestep;
-    }
-    private static class Player2Mover implements Runnable
-    {
-        public Player2Mover()
-        {
-            velocitystep = 0.01;
-            rotatestep = 0.05;
-        }
-
-        public void run()
-        {
-            while (endgame == false)
-            {
-                try
-                {
-                    Thread.sleep(10);
-                }
-                catch (InterruptedException e)
-                {
-                }
-                if (wPressed == true && p2velocity <= 2)
-                {
-                    p2velocity = p2velocity + velocitystep;
-                }else{
-                    p2velocity = p2velocity + (p2velocity > 0 ? (-velocitystep*0.75) :0);
-                }
-                if (sPressed == true)
-                {
-                    p2velocity = p2velocity - velocitystep;
-                }else{
-                    p2velocity = p2velocity - (p1velocity < 0 ? (-velocitystep*0.75) :0);
-                }
-                if (aPressed == true)
-                {
-                    if (p2velocity < 0)
-                    {
-                        p2.rotate(rotatestep);
-                    } else
-                    {
-                        p2.rotate(-rotatestep);
-                    }
-                }
-                if (dPressed == true)
-                {
-                    if (p2velocity < 0)
-                    {
-                        p2.rotate(-rotatestep);
-                    }
-                    else
-                    {
-                        p2.rotate(rotatestep);
-                    }
-                }
-
-                p2.move(p2velocity * Math.cos(p2.getAngle() - pi / 2.0), p2velocity * Math.sin(p2.getAngle() - pi / 2.0));
-                if(p2.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
-                    p2velocity = 0.0;
-                }
-            }
-        }
-        private double velocitystep;
-        private double rotatestep;
-    }
-
-    private static class CollisionChecker implements Runnable
-    {
-        public void run()
-        {
-            System.out.println("RUNNING COLLISION CHECK");
-            Random randomNumbers = new Random(LocalTime.now().getNano());
-            while (endgame == false)
-            {
-                try
-                {
-                    // TODO compare all asteroids to all player bullets
-                    // compare all asteroids to player
-                    try {
-                        // compare p1 to p2
-                        if (collisionOccurs(p2, p1)) {
-                            double p1X = p1.x;
-                            double p1Y = p1.y;
-                            double p2X = p2.x;
-                            double p2Y = p2.y;
-
-                            System.out.println("YOU HIT Another Player");
-                            player = ImageIO.read(new File("explosions.png"));
-                            player2 = ImageIO.read(new File("explosions.png"));
-                            // Pause for 2 seconds
-                            // Pause all threads for 2 seconds
-                            synchronized (this) {
-                                wait(2000);
-                                p1velocity = 0;
-                                p2velocity = 0;
-                                p1.x = p1X - 25;
-                                p1.y = p1Y;
-                                p2.x = p1X + 25;
-                                p2.y = p1Y;
-                            }
-                            player = ImageIO.read(new File("countach blue.png"));
-                            player2 = ImageIO.read(new File("countach purple.png"));
-
-                        }
-                        // compare p1 to p2
-                        if (collisionOccurs(dirt, p1)) {
-                            System.out.println("YOU HIT Dirt");
-                        }
-                    }
-                    catch (java.lang.NullPointerException jlnpe)
-                    {
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                } catch (java.lang.ArrayIndexOutOfBoundsException jlaioob)
-                {
-                }
-            }
-        }
-    }
-    private static class WinChecker implements Runnable
-    {
-        public void run()
-        {
-            while (endgame == false)
-            {
-//                if (asteroids.size() == 0)
-//                {
-//                    endgame = true;
-//                    System.out.println("Game Over You Win");
-//                }
-            }
-        }
-    }
-
-    // TODO make one lock rotate function which takes as input objInner,
-    // objOuter, and point relative to objInner’s x, y that objOuter must
-    // rotate around.
-    // dist is a distance between the two objects at the bottom of objInner.
-
-    private static AffineTransformOp rotateImageObject(ImageObject obj) {
-        AffineTransform at = AffineTransform.getRotateInstance(obj.getAngle(), obj.getWidth() / 2.0,
-                obj.getHeight() / 2.0);
-        AffineTransformOp atop = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-
-        return atop;
-    }
-
-    private static AffineTransformOp spinImageObject(ImageObject obj) {
-        AffineTransform at = AffineTransform.getRotateInstance(obj.getInternalAngle(), obj.getWidth() / 2.0,
-                obj.getHeight() / 2.0);
-        AffineTransformOp atop = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        return atop;
-    }
-
-    private static void backgroundDraw() {
-        Graphics g = appFrame.getGraphics();
-        Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(background, XOFFSET, YOFFSET, null);
-    }
-    private static void playerDraw()
-    {
-        Graphics g = appFrame.getGraphics();
-        Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(p1).filter(player, null), (int) (p1.getX() + 0.5), (int) (p1.getY() + 0.5), null);
-    }
-    private static void player2Draw()
-    {
-        Graphics g = appFrame.getGraphics();
-        Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(p2).filter(player2, null), (int) (p2.getX() + 0.5), (int) (p2.getY() + 0.5), null);
-    }
-    private static void dirtDraw()
-    {
-        Graphics g = appFrame.getGraphics();
-        Graphics2D g2D = (Graphics2D) g;
-        g2D.drawImage(rotateImageObject(dirt).filter(backgroundOutline, null), (int) (dirt.getX() + 0.5), (int) (dirt.getY() + 0.5), null);
-    }
-    private static class KeyPressed extends AbstractAction {
-        public KeyPressed() {
-            action = "";
-        }
-
-        public KeyPressed(String input) {
-            action = input;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (action.equals("UP")) {
-                upPressed = true;
-            }
-            if (action.equals("DOWN")) {
-                downPressed = true;
-            }
-            if (action.equals("LEFT")) {
-                leftPressed = true;
-            }
-            if (action.equals("RIGHT")) {
-                rightPressed = true;
-            }
-            if (action.equals("W")) {
-                wPressed = true;
-            }
-            if (action.equals("S")) {
-                sPressed = true;
-            }
-            if (action.equals("A")) {
-                aPressed = true;
-            }
-            if (action.equals("D")) {
-                dPressed = true;
-            }
-
-        }
-        private String action;
-    }
-
-    private static class KeyReleased extends AbstractAction {
-        public KeyReleased() {
-            action = "";
-        }
-
-        public KeyReleased(String input) {
-            action = input;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (action.equals("UP")) {
-                upPressed = false;
-            }
-            if (action.equals("DOWN")) {
-                downPressed = false;
-            }
-            if (action.equals("LEFT")) {
-                leftPressed = false;
-            }
-            if (action.equals("RIGHT")) {
-                rightPressed = false;
-            }
-            if (action.equals("W")) {
-                wPressed = false;
-            }
-            if (action.equals("S")) {
-                sPressed = false;
-            }
-            if (action.equals("A")) {
-                aPressed = false;
-            }
-            if (action.equals("D")) {
-                dPressed = false;
-            }
-        }
-
-        private String action;
-    }
-    private static class QuitGame implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            endgame = true;
-        }
-    }
-
-    private static class StartGame implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            endgame = true;
-            upPressed = false;
-            downPressed = false;
-            leftPressed = false;
-            rightPressed = false;
-            wPressed = false;
-            sPressed = false;
-            aPressed = false;
-            dPressed = false;
-
-            p1 = new ImageObject(p1originalX, p1originalY, p1width, p1height, 0.0);
-            p2 = new ImageObject(p2originalX, p2originalY, p2width, p2height, 0.0);
-
-            p1velocity = 0.0;
-            p2velocity = 0.0;
-
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException ie) {
-
-            }
-            endgame = false;
-            Thread t1 = new Thread(new Animate());
-            Thread t2 = new Thread(new PlayerMover());
-            Thread t5 = new Thread(new Player2Mover());
-            Thread t3 = new Thread(new CollisionChecker());
-            Thread t4 = new Thread(new WinChecker());
-
-
-            t1.start();
-            t2.start();
-            t3.start();
-            t4.start();
-            t5.start();
-        }
-    }
-
-    private static Boolean isInside(double p1x, double p1y, double p2x1, double p2y1, double p2x2, double p2y2) {
-        Boolean ret = false;
-        if (p1x > p2x1 && p1x < p2x2) {
-            if (p1y > p2y1 && p1y < p2y2) {
-                ret = true;
-            } else if (p1y > p2y2 && p1y < p2y1) {
-                ret = true;
-            }
-        }
-        if (p1x > p2x2 && p1x < p2x1) {
-            if (p1y > p2y1 && p1y < p2y2) {
-                ret = true;
-            } else if (p1y > p2y2 && p1y < p2y1) {
-                ret = true;
-            }
-        }
-        return ret;
-    }
-
-    private static Boolean collisionOccursCoordinates(double p1x1, double p1y1, double p1x2, double p1y2,
-                                                      double p2x1, double p2y1, double p2x2, double p2y2) {
-        Boolean ret = false;
-        if (isInside(p1x1, p1y1, p2x1, p2y1, p2x2, p2y2)) {
-            ret = true;
-        }
-        if (isInside(p1x1, p1y2, p2x1, p2y1, p2x2, p2y2)) {
-            ret = true;
-        }
-        if (isInside(p1x2, p1y1, p2x1, p2y1, p2x2, p2y2)) {
-            ret = true;
-        }
-        if (isInside(p1x2, p1y2, p2x1, p2y1, p2x2, p2y2)) {
-            ret = true;
-        }
-        if (isInside(p2x1, p2y1, p1x1, p1y1, p1x2, p1y2)) {
-            ret = true;
-        }
-        if (isInside(p2x1, p2y2, p1x1, p1y1, p1x2, p1y2)) {
-            ret = true;
-        }
-        if (isInside(p2x2, p2y1, p1x1, p1y1, p1x2, p1y2)) {
-            ret = true;
-        }
-        if (isInside(p2x2, p2y2, p1x1, p1y1, p1x2, p1y2)) {
-            ret = true;
-        }
-        return ret;
-    }
-
-    private static Boolean collisionOccurs(ImageObject obj1, ImageObject obj2) {
-        Boolean ret = false;
-        if (collisionOccursCoordinates(
-                obj1.getX(), obj1.getY(),
-                obj1.getX() + obj1.getWidth(), obj1.getY() + obj1.getHeight(),
-                obj2.getX(), obj2.getY(),
-                obj2.getX() + obj2.getWidth(), obj2.getY() + obj2.getHeight()
-        )) {
-            ret = true;
-        }
-        System.out.println();
-        return ret;
-    }
-
-
-    private static class ImageObject {
-        public ImageObject() {
-        }
-
-        public ImageObject(double xinput, double yinput, double xwidthinput, double yheightinput, double angleinput) {
-            x = xinput;
-            y = yinput;
-            xwidth = xwidthinput;
-            yheight = yheightinput;
-            angle = angleinput;
-            internalangle = 0.0;
-            coords = new Vector<Double>();
-        }
-
-        public double getX() {
-            return x;
-        }
-
-        public double getY() {
-            return y;
-        }
-
-        public double getWidth() {
-            return xwidth;
-        }
-
-        public double getHeight() {
-            return yheight;
-        }
-
-        public double getAngle() {
-            return angle;
-        }
-
-        public double getInternalAngle() {
-            return internalangle;
-        }
-
-        public void setAngle(double angleinput) {
-            angle = angleinput;
-        }
-
-        public void setInternalAngle(double internalangleinput) {
-            internalangle = internalangleinput;
-        }
-
-        public Vector<Double> getCoords() {
-            return coords;
-        }
-
-        public void setCoords(Vector<Double> coordsinput) {
-            coords = coordsinput;
-            generateTriangles();
-            // printTriangles();
-        }
-
-        public void generateTriangles() {
-            triangles = new Vector<Double>();
-            // format: (0, 1), (2, 3), (4, 5) is the (x, y) coords of a triangle.
-            // get center point of all coordinates.
-            comX = getComX();
-            comY = getComY();
-
-            for (int i = 0; i < coords.size(); i = i + 2) {
-                triangles.addElement(coords.elementAt(i));
-                triangles.addElement(coords.elementAt(i + 1));
-                triangles.addElement(coords.elementAt((i + 2) % coords.size()));
-                triangles.addElement(coords.elementAt((i + 3) % coords.size()));
-                triangles.addElement(comX);
-                triangles.addElement(comY);
-            }
-        }
-
-        public double getComX() {
-            double ret = 0;
-            if (coords.size() > 0) {
-                for (int i = 0; i < coords.size(); i = i + 2) {
-                    ret = ret + coords.elementAt(i);
-                }
-                ret = ret / (coords.size() / 2.0);
-            }
-            return ret;
-        }
-
-        public double getComY() {
-            double ret = 0;
-            if (coords.size() > 0) {
-                for (int i = 1; i < coords.size(); i = i + 2) {
-                    ret = ret + coords.elementAt(i);
-                }
-                ret = ret / (coords.size() / 2.0);
-            }
-            return ret;
-        }
-
-        public void move(double xinput, double yinput) {
-            x = x + xinput;
-            y = y + yinput;
-        }
-
-        public void moveto(double xinput, double yinput) {
-            x = xinput;
-            y = yinput;
-        }
-
-        public boolean screenWrap(double leftEdge, double rightEdge, double topEdge, double bottomEdge) {
-            boolean wrapped = false;
-            if (x > rightEdge) {
-                x = rightEdge -5;
-                wrapped = true;
-            }
-            if (x < leftEdge) {
-                x = leftEdge + 5;
-                wrapped = true;
-            }
-            if (y > bottomEdge) {
-                y = bottomEdge -5;
-                wrapped = true;
-            }
-            if (y < topEdge) {
-                y = topEdge +5;
-                wrapped = true;
-            }
-            return wrapped;
-        }
-
-        public void rotate(double angleinput) {
-            angle = angle + angleinput;
-            while (angle > twoPi) {
-                angle = angle % twoPi;
-            }
-            while (angle < 0) {
-                angle = angle + twoPi;
-            }
-        }
-
-        public void spin(double internalangleinput) {
-            internalangle = internalangle + internalangleinput;
-            while (internalangle > twoPi) {
-                internalangle = internalangle % twoPi;
-            }
-            while (internalangle < 0) {
-                internalangle = internalangle + twoPi;
-            }
-        }
-
-        private double x;
-        private double y;
-        private double xwidth;
-        private double yheight;
-        private double angle; // in Radians
-        private double internalangle; // in Radians
-        private Vector<Double> coords;
-        private Vector<Double> triangles;
-        private double comX;
-        private double comY;
-    }
-
-    private static void bindKey(JPanel myPanel, String input) {
-        myPanel.getInputMap(IFW).put(KeyStroke.getKeyStroke("pressed " + input), input + " pressed");
-        myPanel.getActionMap().put(input + " pressed", new KeyPressed(input));
-        myPanel.getInputMap(IFW).put(KeyStroke.getKeyStroke("released " + input), input + " released");
-        myPanel.getActionMap().put(input + " released", new KeyReleased(input));
-    }
-
-    private static class LapNumbers implements ActionListener {
-        public int decodeLevel(String input) {
-            int ret = 3;
-            if (input.equals("One")) {
-                ret = 1;
-            } else if (input.equals("Two")) {
-                ret = 2;
-            } else if (input.equals("Three")) {
-                ret = 3;
-            } else if (input.equals("Four")) {
-                ret = 4;
-            } else if (input.equals("Five")) {
-                ret = 5;
-            } else if (input.equals("Six")) {
-                ret = 6;
-            } else if (input.equals("Seven")) {
-                ret = 7;
-            } else if (input.equals("Eight")) {
-                ret = 8;
-            } else if (input.equals("Nine")) {
-                ret = 9;
-            } else if (input.equals("Ten")) {
-                ret = 10;
-            }
-            return ret;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            JComboBox cb = (JComboBox) e.getSource();
-            String textLevel = (String) cb.getSelectedItem();
-            numLaps = decodeLevel(textLevel);
-        }
-    }
-
-
-
-    public static void main(String[] args) {
-        setup();
-        appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        appFrame.setSize(495, 700);
-
-        JPanel myPanel = new JPanel();
-
-        String[] numLaps = {"One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"};
-
-        JComboBox<String> levelMenu = new JComboBox<String>(numLaps);
-        levelMenu.setSelectedIndex(2);
-        levelMenu.addActionListener(new LapNumbers());
-        myPanel.add(levelMenu);
-
-        JButton newGameButton = new JButton("New Game");
-        newGameButton.addActionListener(new StartGame());
-        myPanel.add(newGameButton);
-        JButton quitButton = new JButton("Quit Game");
-        quitButton.addActionListener(new QuitGame());
-        myPanel.add(quitButton);
-        bindKey(myPanel, "UP");
-        bindKey(myPanel, "DOWN");
-        bindKey(myPanel, "LEFT");
-        bindKey(myPanel, "RIGHT");
-        bindKey(myPanel, "W");
-        bindKey(myPanel, "S");
-        bindKey(myPanel, "A");
-        bindKey(myPanel, "D");
-
-        appFrame.getContentPane().add(myPanel, "South");
-        appFrame.setVisible(true);
-    }
-
-    private static Boolean endgame;
-    private static BufferedImage background;
-    private static BufferedImage backgroundOutline;
-
-    private static BufferedImage player;
-    private static BufferedImage player2;
-    private static Boolean upPressed;
-    private static Boolean downPressed;
-    private static Boolean leftPressed;
-    private static Boolean rightPressed;
-    private static Boolean wPressed;
-    private static Boolean sPressed;
-    private static Boolean aPressed;
-    private static Boolean dPressed;
-    private static ImageObject p1;
-    private static ImageObject p2;
-    private static ImageObject dirt;
-    private static int numLaps;
-    private static double p1width;
-    private static double p1height;
-    private static double p1originalX;
-    private static double p1originalY;
-    private static double p1velocity;
-    private static double p2width;
-    private static double p2height;
-    private static double p2originalX;
-    private static double p2originalY;
-    private static double p2velocity;
-    private static int XOFFSET;
-    private static int YOFFSET;
-    private static int WINWIDTH;
-    private static int WINHEIGHT;
-    private static double pi;
-    private static double twoPi;
-    private static JFrame appFrame;
-    private static final int IFW = JComponent.WHEN_IN_FOCUSED_WINDOW;
 }
 
+class TrackPaint extends Sprite {
 
+    public TrackPaint(final int x, final int y, final int width, final int height) {
+        super(x, y, width, height);
+    }
+
+    @Override
+    public void draw(final Graphics2D g2d, ImageObserver imageObserver) {
+        g2d.setColor(Color.WHITE);
+        g2d.fill(getBounds());
+        try {
+            // Load the PNG image
+            BufferedImage backgroundImage = ImageIO.read(new File("assets/race_track.png"));
+
+            // Draw the image onto the graphics context
+            g2d.drawImage(backgroundImage, 0, 0, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class TrackData {
+
+    private final static int BOUNDING_WALL_THICKNESS = 30;
+    private final static int CENTRE_WALL_THICKNESS = 300;
+    private final static int CENTRE_WALL_LENGTH = 700;
+    private final static int CENTRE_WALL_X_POSITION = 200;
+    private final static int CENTRE_WALL_Y_POSITION = 200;
+
+    private static final int FIRST_CAR_X = 200;
+    private static final int FIRST_CAR_Y = 50;
+    private static final int CAR_SPACING = 80;
+
+    private static final int IBOX_X = 300;
+    private static final int IBOX_Y = 520;
+
+
+    public static int getCarX(final int carIndex) {
+        return FIRST_CAR_X;
+    }
+
+    public static int getCarY(final int carIndex) {
+        return FIRST_CAR_Y + CAR_SPACING * carIndex;
+    }
+
+    public static List<Wall> createWalls() {
+        Wall northWall = new Wall(0, 0, Racer.TRACK_WIDTH, BOUNDING_WALL_THICKNESS);
+        Wall southWall = new Wall(0, Racer.TRACK_HEIGHT - BOUNDING_WALL_THICKNESS, Racer.TRACK_WIDTH,
+                BOUNDING_WALL_THICKNESS);
+        Wall westWall = new Wall(0, 0, BOUNDING_WALL_THICKNESS, Racer.TRACK_HEIGHT);
+        Wall eastWall = new Wall(Racer.TRACK_WIDTH - BOUNDING_WALL_THICKNESS, 0,
+                BOUNDING_WALL_THICKNESS,
+                Racer.TRACK_HEIGHT);
+        List<Wall> walls = new ArrayList<>();
+        Collections.addAll(walls, northWall, southWall, westWall, eastWall);
+        return walls;
+    }
+
+    public static List<Car> createCars() {
+        List<Car> cars = new ArrayList<>();
+        cars.add(Car.fromIndex(0));
+        cars.add(Car.fromIndex(1));
+        return cars;
+    }
+
+    public static List<Box> createBoxes() {
+        List<Box> boxes = new ArrayList<>();
+        boxes.add(new Box(IBOX_X, IBOX_Y));
+        boxes.add(new Box(IBOX_X, IBOX_Y + 30));
+        boxes.add(new Box(IBOX_X, IBOX_Y + 60));
+        boxes.add(new Box(IBOX_X, IBOX_Y + 90));
+        return boxes;
+    }
+
+    public static List<TrackPaint> createTrackPaints() {
+        List<TrackPaint> paints = new ArrayList<>();
+        paints.add(new TrackPaint(250, TrackData.BOUNDING_WALL_THICKNESS, 2,
+                TrackData.CENTRE_WALL_Y_POSITION - TrackData.BOUNDING_WALL_THICKNESS));
+        return paints;
+    }
+
+}
+
+class Track extends JPanel implements Runnable {
+
+    private static final int DELAY = 10;
+    private final List<Car> cars;
+    private final List<MovingObject> movingObjects;
+    private final List<Wall> walls;
+    private final List<TrackPaint> trackPaints;
+
+    public Track() {
+        cars = new ArrayList<>();
+        movingObjects = new ArrayList<>();
+        walls = new ArrayList<>();
+        trackPaints = new ArrayList<>();
+        initTrack();
+    }
+
+    private void initTrack() {
+        addKeyListener(new TAdapter());
+        setBackground(Color.GRAY);
+        setFocusable(true);
+        walls.addAll(TrackData.createWalls());
+        trackPaints.addAll(TrackData.createTrackPaints());
+        cars.addAll(TrackData.createCars());
+        movingObjects.addAll(cars);
+        movingObjects.addAll(TrackData.createBoxes());
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        walls.forEach(wall -> wall.draw(g2d, this));
+        trackPaints.forEach(paint -> paint.draw(g2d, this));
+        movingObjects.forEach(obj -> obj.draw(g2d, this));
+        drawStats(g2d);
+        Toolkit.getDefaultToolkit().sync();
+    }
+
+    private void drawStats(Graphics2D g2d) {
+        g2d.drawString(cars.get(0).infoString(), 40, 50);
+    }
+
+    private void updateObjects(long timeDiff) {
+        movingObjects.forEach(obj -> obj.update((float) timeDiff / 1000));
+    }
+
+    private class TAdapter extends KeyAdapter {
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            cars.forEach(car -> car.keyReleased(e));
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            cars.forEach(car -> car.keyPressed(e));
+        }
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        final Thread animatorThread = new Thread(this);
+        animatorThread.start();
+    }
+
+    @Override
+    public void run() {
+        long lastTime = System.currentTimeMillis();
+
+        while (true) {
+            final long now = System.currentTimeMillis();
+            final long timeDiff = now - lastTime;
+            lastTime = now;
+            CollisionManager.checkAndApplyCollisions(movingObjects, walls);
+            updateObjects(timeDiff);
+            repaint();
+            long sleep = DELAY - timeDiff;
+            if (sleep < 0) {
+                sleep = 2;
+            }
+            try {
+                Thread.sleep(sleep);
+            } catch (InterruptedException e) {
+                String msg = String.format("Thread interrupted: %s", e.getMessage());
+                JOptionPane.showMessageDialog(this, msg, "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+}
+
+abstract class Sprite {
+    protected double x;
+    protected double y;
+    protected int width;
+    protected int height;
+    protected boolean visible;
+    protected Image image;
+
+    public Sprite(int x, int y) {
+        this.x = x;
+        this.y = y;
+        visible = true;
+    }
+
+    public Sprite(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        visible = true;
+    }
+
+    protected void loadImage(String imageName) {
+        ImageIcon ii = new ImageIcon(imageName);
+        image = ii.getImage();
+        width = image.getWidth(null);
+        height = image.getHeight(null);
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public int getX() {
+        return (int) x;
+    }
+
+    public int getY() {
+        return (int) y;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle((int) x, (int) y, width, height);
+    }
+
+    public abstract void draw (Graphics2D g2d, ImageObserver imageObserver);
+}
+
+class Racer extends JFrame {
+
+    public final static int TRACK_WIDTH = 495;
+    public final static int TRACK_HEIGHT = 700;
+    private final static int BOTTOM_MARGIN = 0;
+
+    private void initUI() {
+        add(new Track());
+        setTitle("Lamborghini Countach Face-off");
+        setSize(TRACK_WIDTH, TRACK_HEIGHT + BOTTOM_MARGIN);
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    public Racer() {
+        initUI();
+    }
+
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            Racer ex = new Racer();
+            ex.setVisible(true);
+        });
+    }
+
+}
+
+abstract class PhysicalObject extends Sprite {
+
+    public PhysicalObject(final int x, final int y) {
+        super(x, y);
+    }
+
+    public PhysicalObject(final int x, final int y, final int width, final int height) {
+        super(x, y, width, height);
+    }
+}
+
+abstract class MovingObject extends PhysicalObject {
+
+    protected double mass; // must be non-zero
+    public double xSpeed;
+    public double ySpeed;
+    protected double xForce;
+    protected double yForce;
+
+    public MovingObject(final int x, final int y) {
+        super(x, y);
+    }
+
+    public MovingObject(final int x, final int y, final int width, final int height) {
+        super(x, y, width, height);
+    }
+
+    public abstract void update(final double timeDiff);
+}
+class CollisionManager {
+
+    private static final double COLLISION_ELASTICITY = 0.5;
+
+    /**
+     * Move objects apart to make sure they remain disjoint by moving the first object away.
+     */
+    private static void deconflict(MovingObject object1, MovingObject object2) {
+        Rectangle intersection = object1.getBounds().intersection(object2.getBounds());
+        if (intersection.width < intersection.height) {
+            object1.x = object1.x - Math.signum(object2.x - object1.x) * intersection.width;
+        } else {
+            object1.y = object1.y - Math.signum(object2.y - object1.y) * intersection.height;
+        }
+    }
+
+    private static void applyCollision(MovingObject object1, MovingObject object2) {
+        final double massRatioObject1 = object1.mass / (object1.mass + object2.mass);
+        final double massRatioObject2 = object2.mass / (object1.mass + object2.mass);
+
+        final double xDistance = object2.x - object1.x;
+        final double yDistance = object2.y - object1.y;
+        final double distance = Math.sqrt(xDistance * xDistance + yDistance * yDistance);
+        final double xDistanceUnit = distance == 0 ? 0 : xDistance / distance;
+        final double yDistanceUnit = distance == 0 ? 0 : yDistance / distance;
+
+        final double meanXSpeed = (object1.xSpeed + object2.xSpeed) / 2;
+        final double meanYSpeed = (object1.ySpeed + object2.ySpeed) / 2;
+        final double collisionXSpeed = object1.xSpeed - object2.xSpeed;
+        final double collisionYSpeed = object1.ySpeed - object2.ySpeed;
+
+        final double xResultant =
+                (collisionXSpeed + xDistanceUnit * Math.abs(collisionYSpeed)) * COLLISION_ELASTICITY;
+        object1.xSpeed = meanXSpeed - massRatioObject2 * xResultant;
+        object2.xSpeed = meanXSpeed + massRatioObject1 * xResultant;
+
+        final double yResultant =
+                (collisionYSpeed + yDistanceUnit * Math.abs(collisionXSpeed)) * COLLISION_ELASTICITY;
+        object1.ySpeed = meanYSpeed - massRatioObject2 * yResultant;
+        object2.ySpeed = meanYSpeed + massRatioObject1 * yResultant;
+
+        deconflict(object1, object2);
+    }
+
+    private static void applyCollision(MovingObject object1, Wall object2) {
+        Rectangle carBounds = object1.getBounds();
+        Rectangle car2Bounds = object2.getBounds();
+        Rectangle intersection = carBounds.intersection(car2Bounds);
+        if (intersection.width < intersection.height) {
+            // horizontal collision
+            object1.x = object1.x - Math.signum(object2.x - object1.x) * intersection.width;
+            object1.xSpeed = -COLLISION_ELASTICITY * object1.xSpeed;
+        } else {
+            // vertical collision
+            object1.y = object1.y - Math.signum(object2.y - object1.y) * intersection.height;
+            object1.ySpeed = -COLLISION_ELASTICITY * object1.ySpeed;
+        }
+    }
+
+    public static void checkAndApplyCollisions(List<MovingObject> movingObjects, List<Wall> walls) {
+        // FIXME Too many collision checks (reflexivity)
+        for (MovingObject collider : movingObjects) {
+            for (MovingObject collidee : movingObjects) {
+                if (collider.getBounds().intersects(collidee.getBounds())) {
+                    if (!collider.equals(collidee)) {
+                        CollisionManager.applyCollision(collider, collidee);
+                    }
+                }
+            }
+        }
+
+        for (MovingObject collider : movingObjects) {
+            for (Wall wall : walls) {
+                if (collider.getBounds().intersects(wall.getBounds())) {
+                    CollisionManager.applyCollision(collider, wall);
+                }
+            }
+        }
+    }
+
+}
+
+class Car extends MovingObject {
+
+    // rad/s
+    private static final double TURN_RATE = 4;
+
+    private static final double AIR_DRAG_COEFFICIENT = 0.01;
+
+    private static final double TYRE_TRACTION_COEFFICIENT = 800;
+    private final static boolean DRAW_BOUNDING_BOXES = true;
+
+    // px/s
+    public double getIndicatedSpeed() {
+        return indicatedSpeed;
+    }
+
+    public String infoString() {
+        return String
+                .format("Speed:%f, xH:%f, yH:%g, xS:%f, yS:%f\nxF:%f, yF:%f",
+                        indicatedSpeed,
+                        xHeading,
+                        yHeading,
+                        xSpeed,
+                        ySpeed,
+                        xForce,
+                        yForce);
+    }
+
+    // radians
+    public double getHeading() {
+        return Math.atan2(xHeading, -yHeading);
+    }
+
+    private double indicatedSpeed;
+    private double xHeading;
+    private double yHeading;
+    private boolean accelerating;
+    private boolean braking;
+    private boolean turningRight;
+    private boolean turningLeft;
+
+    private int forwardKeyCode = KeyEvent.VK_UP;
+    private int backwardKeyCode = KeyEvent.VK_DOWN;
+    private int leftKeyCode = KeyEvent.VK_LEFT;
+    private int rightKeyCode = KeyEvent.VK_RIGHT;
+
+    public Car(int x, int y) {
+        super(x, y);
+        initCar(0);
+    }
+
+    @Override
+    public void draw(final Graphics2D g2d, ImageObserver imageObserver) {
+        g2d.drawImage(getImage(), getAffineTransform(), imageObserver);
+
+        if (DRAW_BOUNDING_BOXES) {
+            g2d.draw(getBounds());
+        }
+    }
+
+    public Car(int x, int y, int carIndex) {
+        super(x, y);
+        initCar(carIndex);
+        if (carIndex == 1) {
+            forwardKeyCode = KeyEvent.VK_W;
+            backwardKeyCode = KeyEvent.VK_S;
+            leftKeyCode = KeyEvent.VK_A;
+            rightKeyCode = KeyEvent.VK_D;
+        }
+    }
+
+    public static Car fromIndex(int carIndex) {
+        return new Car(TrackData.getCarX(carIndex), TrackData.getCarY(carIndex), carIndex);
+    }
+
+    private void initCar(int carIndex) {
+        if (carIndex == 1) {
+            loadImage("assets/countach blue.png");
+        } else {
+            loadImage("assets/countach purple.png");
+        }
+        indicatedSpeed = 0;
+        xSpeed = 0;
+        ySpeed = 0;
+        xForce = 0;
+        yForce = 0;
+        mass = 4;
+        xHeading = 1;
+        yHeading = 0;
+    }
+
+    public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
+        if (key == leftKeyCode) {
+            turningLeft = true;
+        }
+        if (key == rightKeyCode) {
+            turningRight = true;
+        }
+        if (key == forwardKeyCode) {
+            accelerating = true;
+        }
+        if (key == backwardKeyCode) {
+            braking = true;
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        int key = e.getKeyCode();
+        if (key == leftKeyCode) {
+            turningLeft = false;
+        }
+        if (key == rightKeyCode) {
+            turningRight = false;
+        }
+        if (key == forwardKeyCode) {
+            accelerating = false;
+        }
+        if (key == backwardKeyCode) {
+            braking = false;
+        }
+    }
+
+    private void updateDynamicsFromInputs(final double timeDiff) {
+        if (accelerating) {
+            // FIXME: Decouple acceleration from frame rate
+            // TODO: Extract magic number
+            xSpeed += 3 * xHeading;
+            ySpeed += 3 * yHeading;
+        }
+        if (braking) {
+            xSpeed -= 2 * xHeading;
+            ySpeed -= 2 * yHeading;
+        }
+        if (turningLeft) {
+            // delta must be acute
+            final double delta = -TURN_RATE * timeDiff;
+            final double newXHeading = Math.cos(delta) * xHeading - Math.sin(delta) * yHeading;
+            final double newYHeading = Math.sin(delta) * xHeading + Math.cos(delta) * yHeading;
+            xHeading = newXHeading;
+            yHeading = newYHeading;
+        }
+        if (turningRight) {
+            final double delta = TURN_RATE * timeDiff;
+            final double newXHeading = Math.cos(delta) * xHeading - Math.sin(delta) * yHeading;
+            final double newYHeading = Math.sin(delta) * xHeading + Math.cos(delta) * yHeading;
+            xHeading = newXHeading;
+            yHeading = newYHeading;
+        }
+    }
+
+    static double signedAngleBetweenVectors(double u1, double u2, double v1, double v2) {
+        return Math.atan2(u2, u1) - Math.atan2(v2, v1);
+    }
+
+    static double lateralTyreForce(double xHeading, double yHeading, double xSpeed, double ySpeed) {
+        if (xSpeed - xHeading == 0) {
+            return 0;
+        }
+        return TYRE_TRACTION_COEFFICIENT * Math
+                .sin(signedAngleBetweenVectors(xHeading, yHeading, xSpeed, ySpeed));
+    }
+
+    protected void updateForces() {
+        final double xAirResistanceForceNewton = -xSpeed * Math.abs(xSpeed) * AIR_DRAG_COEFFICIENT;
+        final double yAirResistanceForceNewton = -ySpeed * Math.abs(ySpeed) * AIR_DRAG_COEFFICIENT;
+        final double lateralTyreForce = lateralTyreForce(xHeading, yHeading, xSpeed, ySpeed);
+        final double xTyreResistanceForceNewton = -yHeading * lateralTyreForce;
+        final double yTyreResistanceForceNewton = xHeading * lateralTyreForce;
+        xForce = xAirResistanceForceNewton + xTyreResistanceForceNewton;
+        yForce = yAirResistanceForceNewton + yTyreResistanceForceNewton;
+    }
+
+    //pre-condition: non-zero
+    protected void updateSpeed(final double timeDiff) {
+        final double dXSpeed = xForce / mass * timeDiff;
+        xSpeed += dXSpeed;
+        final double dYSpeed = yForce / mass * timeDiff;
+        ySpeed += dYSpeed;
+        indicatedSpeed = Math.sqrt(xSpeed * xSpeed + ySpeed * ySpeed);
+    }
+
+    // pre-condition: non-zero
+    @Override
+    public void update(final double timeDiff) {
+        if (timeDiff == 0) {
+            return;
+        }
+
+        // Original update logic
+        updateDynamicsFromInputs(timeDiff);
+        updateForces();
+        updateSpeed(timeDiff);
+        x += xSpeed * timeDiff;
+        y += ySpeed * timeDiff;
+
+        // New code for checking pixel color under the car
+        try {
+            BufferedImage backgroundImage = ImageIO.read(new File("assets/race_track.png"));
+            int pixelX = (int) x + width / 2;  // Calculate center of the car
+            int pixelY = (int) y + height / 2;
+            if (pixelX >= 0 && pixelX < backgroundImage.getWidth() && pixelY >= 0 && pixelY < backgroundImage.getHeight()) {
+                int pixelColor = backgroundImage.getRGB(pixelX, pixelY);
+                // Check if pixel color matches rgba e1b4f7ff or b4c0f7ff
+                if (pixelColor == 0xe1b4f7ff || pixelColor == 0xb4c0f7ff) {
+                    // Do something if condition is met
+                    System.out.println("Car is on track with specified pixel color!");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public AffineTransform getAffineTransform() {
+        AffineTransform affine = new AffineTransform();
+        affine.translate(x, y);
+        // center image
+        affine.rotate(getHeading(), (double) width / 2, (double) height / 2);
+        return affine;
+    }
+
+}
+
+class Box extends MovingObject {
+
+    public static final int WIDTH = 20;
+    public static final int HEIGHT = 20;
+    private static final double FRICTION_COEFFICIENT = 400;
+
+    public Box(final int x, final int y) {
+        super(x, y, WIDTH, HEIGHT);
+        mass = 1;
+    }
+
+    @Override
+    public void draw(final Graphics2D g2d, final ImageObserver imageObserver) {
+        g2d.fill(getBounds());
+    }
+
+    protected void updateForces() {
+        // Lower bound to both model static friction and to avoid division by 0.
+        final double speed = Math.max(1, Math.sqrt(xSpeed * xSpeed + ySpeed * ySpeed));
+        final double xTrackFrictionForce = - FRICTION_COEFFICIENT * xSpeed / speed;
+        final double yTrackFrictionForce = - FRICTION_COEFFICIENT * ySpeed / speed;
+        xForce = xTrackFrictionForce;
+        yForce = yTrackFrictionForce;
+    }
+
+    // apply forces
+    protected void updateSpeed(final double timeDiff) {
+        final double dXSpeed = xForce / mass * timeDiff;
+        xSpeed += dXSpeed;
+        final double dYSpeed = yForce / mass * timeDiff;
+        ySpeed += dYSpeed;
+
+        // Check if the car is on top of the outline image and slow down if necessary
+        if (isCarOnOutline()) {
+            xSpeed *= 0.5; // Reduce speed by 50%
+            ySpeed *= 0.5; // Reduce speed by 50%
+        }
+    }
+
+    private boolean isCarOnOutline() {
+        try {
+            // Load the PNG image
+            BufferedImage outlineImage = ImageIO.read(new File("assets/race_track_outline.png"));
+
+            // Get the color of the pixel under the car's position
+            int pixelColor = outlineImage.getRGB((int) x, (int) y);
+            Color outlineColor = new Color(pixelColor, true);
+
+            // Check if the color of the pixel is not transparent (indicating the car is on the outline)
+            return outlineColor.getAlpha() != 0;
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Assume not on outline if image loading fails
+            return false;
+        }
+    }
+
+
+    @Override
+    public void update(final double timeDiff) {
+        if (timeDiff == 0) {
+            return;
+        }
+        updateForces();
+        updateSpeed(timeDiff);
+        x += xSpeed * timeDiff;
+        y += ySpeed * timeDiff;
+    }
+
+}
