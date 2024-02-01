@@ -1,6 +1,8 @@
 // Asteroids . java Copyright (C) 2019 Ben Sanders
 // TODO make levels that flow , one to the next . have a score and lives !
 
+import org.w3c.dom.ls.LSOutput;
+
 import java.util.Vector ;
 import java.util.Random;
 import java.time.LocalTime;
@@ -15,9 +17,41 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 public class Race
 {
+
+    private static class AudioLooper implements Runnable{
+        public void run(){
+            while(!endgame){
+                Long curTime = System.currentTimeMillis();
+                if(curTime - lastAudioStart > audiolifeTime) {
+                    playAudio();
+                }
+            }
+        }
+
+        public static void playAudio(){
+            try{
+                clip.stop();
+            } catch(Exception e){
+                //NOP
+            }
+            try{
+                AudioInputStream ais = AudioSystem.getAudioInputStream(new File("music.wav").getAbsoluteFile());
+                clip = AudioSystem.getClip();
+                clip.open(ais);
+                clip.start();
+                lastAudioStart = System.currentTimeMillis();
+                audiolifeTime = (long)249000;
+            } catch(Exception e){
+                //NOP
+            }
+        }
+    }
     public Race()
     {
         setup();
@@ -37,10 +71,21 @@ public class Race
         p1height = 25; // 25;
         p2width = 25; // 18.5;
         p2height = 25; // 25;
-        p1originalX = 50;
-        p1originalY = 315;
-        p2originalX = 75;
-        p2originalY = 335;
+        p1originalX = 85;
+        p1originalY = 350;
+        p2originalX = 105;
+        p2originalY = 380;
+        p1LapCount = 0;
+        p2LapCount = 0;
+        lastPassedStartTime = System.currentTimeMillis();
+        p2lastPassedStartTime = System.currentTimeMillis();
+        p1BestTime = (long) 100000000000.0;
+        p2BestTime = (long) 100000000000.0;
+        p1PassedFirst = false;
+        p2PassedFirst = false;
+
+
+        audiolifeTime = Long.valueOf(0);
 
         try
         {
@@ -127,6 +172,34 @@ public class Race
                         p1.rotate(rotatestep);
                     }
                 }
+                // Get the RGBA color of the background image at the position of the player
+                int x = (int) (p1.getX() + 0.5);
+                int y = (int) (p1.getY() + 0.5);
+                int color = background.getRGB(x, y);
+                int alpha = (color >> 24) & 0xFF;
+                int red = (color >> 16) & 0xFF;
+                int green = (color >> 8) & 0xFF;
+                int blue = color & 0xFF;
+
+                if (("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 225, 180, 247, 255") || ("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 180, 192, 247, 255")) {
+                    p1velocity = 0.08;
+                } else if (("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 0, 128, 0, 255")) {
+                    p1PassedFirst = true;
+
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - lastPassedStartTime > 5000) {
+                        // Output the "Passed Start" event
+                        System.out.println("Player 1 Passed Start");
+                        System.out.println(currentTime - lastPassedStartTime);
+                        // Update the last event time
+                        System.out.println(p1BestTime + " > " + (currentTime - lastPassedStartTime) + " " +  (p1BestTime > (currentTime - lastPassedStartTime)));
+                        if(p1BestTime > (currentTime - lastPassedStartTime) && p1PassedFirst){
+                            p1BestTime = currentTime - lastPassedStartTime;
+                        }
+                        lastPassedStartTime = currentTime;
+                        p1LapCount++;
+                    }
+                }
 
                 p1.move(p1velocity * Math.cos(p1.getAngle() - pi / 2.0), p1velocity * Math.sin(p1.getAngle() - pi / 2.0));
                 if(p1.screenWrap(XOFFSET, XOFFSET + WINWIDTH, YOFFSET, YOFFSET + WINHEIGHT)){
@@ -189,6 +262,34 @@ public class Race
                     else
                     {
                         p2.rotate(rotatestep);
+                    }
+                }
+                // Get the RGBA color of the background image at the position of the player
+                int x = (int) (p2.getX() + 0.5);
+                int y = (int) (p2.getY() + 0.5);
+                int color = background.getRGB(x, y);
+                int alpha = (color >> 24) & 0xFF;
+                int red = (color >> 16) & 0xFF;
+                int green = (color >> 8) & 0xFF;
+                int blue = color & 0xFF;
+
+                if (("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 225, 180, 247, 255") || ("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 180, 192, 247, 255")) {
+                    p2velocity = 0.08;
+                } else if (("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 0, 128, 0, 255")) {
+                    p2PassedFirst = true;
+
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - p2lastPassedStartTime > 5000) {
+                        // Output the "Passed Start" event
+                        System.out.println("Player 2 Passed Start");
+                        System.out.println(currentTime - p2lastPassedStartTime);
+                        // Update the last event time
+                        System.out.println(p2BestTime + " > " + (currentTime - p2lastPassedStartTime) + " " +  (p2BestTime > (currentTime - p2lastPassedStartTime)));
+                        if(p2BestTime > (currentTime - p2lastPassedStartTime) && p2PassedFirst){
+                            p2BestTime = currentTime - p2lastPassedStartTime;
+                        }
+                        p2lastPassedStartTime = currentTime;
+                        p2LapCount++;
                     }
                 }
 
@@ -297,6 +398,24 @@ public class Race
         Graphics g = appFrame.getGraphics();
         Graphics2D g2D = (Graphics2D) g;
         g2D.drawImage(background, XOFFSET, YOFFSET, null);
+        int speed = (int) Math.round(p1velocity * 55); //TODO: Add this
+        int speed2 = (int) Math.round(p2velocity * 55); //TODO: Add this
+
+        g2D.drawString("Player 1 Speed: " + speed + " mph", XOFFSET + 10, YOFFSET + 20); //TODO: Add this
+        g2D.drawString("Player 2 Speed: " + speed2 + " mph", XOFFSET + 355, YOFFSET + 20); //TODO: Add this
+        g2D.drawString("Player 1 Lap: " + p1LapCount, XOFFSET + 10, YOFFSET + 35); //TODO: Add this
+        g2D.drawString("Player 2 Lap: " + p2LapCount, XOFFSET + 355, YOFFSET + 35); //TODO: Add this
+        if(p1BestTime == 100000000000.0){
+            g2D.drawString("Player 1 Best Time: " + "0.0", XOFFSET + 10, YOFFSET + 50); //TODO: Add this
+        }else {
+            g2D.drawString("Player 1 Best Time: " + p1BestTime / 1000.0, XOFFSET + 10, YOFFSET + 50); //TODO: Add this
+        }
+        if(p2BestTime == 100000000000.0){
+            g2D.drawString("Player 2 Best Time: " + "0.0", XOFFSET + 355, YOFFSET + 50); //TODO: Add this
+        }else {
+            g2D.drawString("Player 2 Best Time: " + p2BestTime / 1000.0, XOFFSET + 355, YOFFSET + 50); //TODO: Add this
+        }
+
     }
     private static void playerDraw() {
         Graphics g = appFrame.getGraphics();
@@ -305,16 +424,6 @@ public class Race
         // Get the RGBA color of the background image at the position of the player
         int x = (int) (p1.getX() + 0.5);
         int y = (int) (p1.getY() + 0.5);
-        int color = background.getRGB(x, y);
-        int alpha = (color >> 24) & 0xFF;
-        int red = (color >> 16) & 0xFF;
-        int green = (color >> 8) & 0xFF;
-        int blue = color & 0xFF;
-
-            if (("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 225, 180, 247, 255") || ("Player 1 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 1 RGBA: 180, 192, 247, 255")) {
-                p1velocity = 0.08;
-            }
-
         g2D.drawImage(rotateImageObject(p1).filter(player, null), x, y, null);
     }
 
@@ -325,15 +434,6 @@ public class Race
         // Get the RGBA color of the background image at the position of the player
         int x = (int) (p2.getX() + 0.5);
         int y = (int) (p2.getY() + 0.5);
-        int color = background.getRGB(x, y);
-        int alpha = (color >> 24) & 0xFF;
-        int red = (color >> 16) & 0xFF;
-        int green = (color >> 8) & 0xFF;
-        int blue = color & 0xFF;
-
-        if (("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 225, 180, 247, 255") || ("Player 2 RGBA: " + red + ", " + green + ", " + blue + ", " + alpha).equals("Player 2 RGBA: 180, 192, 247, 255")) {
-            p2velocity = 0.08;
-        }
 
         g2D.drawImage(rotateImageObject(p2).filter(player2, null), x, y, null);
     }
@@ -438,6 +538,8 @@ public class Race
             p1velocity = 0.0;
             p2velocity = 0.0;
 
+            lastAudioStart = System.currentTimeMillis();
+
             try {
                 Thread.sleep(50);
             } catch (InterruptedException ie) {
@@ -449,6 +551,7 @@ public class Race
             Thread t5 = new Thread(new Player2Mover());
             Thread t3 = new Thread(new CollisionChecker());
             Thread t4 = new Thread(new WinChecker());
+            Thread t6 = new Thread(new AudioLooper());
 
 
             t1.start();
@@ -456,6 +559,7 @@ public class Race
             t3.start();
             t4.start();
             t5.start();
+            t6.start();
         }
     }
 
@@ -788,10 +892,24 @@ public class Race
     private static int YOFFSET;
     private static int WINWIDTH;
     private static int WINHEIGHT;
+    private static int p1LapCount;
+    private static int p2LapCount;
+    private static long lastPassedStartTime;
+    private static long p1BestTime;
+
     private static double pi;
     private static double twoPi;
     private static JFrame appFrame;
     private static final int IFW = JComponent.WHEN_IN_FOCUSED_WINDOW;
+    private static Long audiolifeTime;
+    private static Long lastAudioStart;
+    private static Clip clip;
+    private static boolean p1PassedFirst;
+    private static boolean p2PassedFirst;
+    private static long p2lastPassedStartTime;
+    private static long p2BestTime;
+
+
 }
 
 
