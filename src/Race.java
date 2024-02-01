@@ -20,7 +20,6 @@ import java.awt.image.AffineTransformOp;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-
 public class Race
 {
 
@@ -75,6 +74,7 @@ public class Race
         p1originalY = 350;
         p2originalX = 105;
         p2originalY = 380;
+        numLaps = 3;
         p1LapCount = 0;
         p2LapCount = 0;
         lastPassedStartTime = System.currentTimeMillis();
@@ -198,6 +198,9 @@ public class Race
                         }
                         lastPassedStartTime = currentTime;
                         p1LapCount++;
+                        if (p1LapCount >= numLaps || p2LapCount >= numLaps) {
+                            endgame = true;
+                        }
                     }
                 }
 
@@ -290,6 +293,10 @@ public class Race
                         }
                         p2lastPassedStartTime = currentTime;
                         p2LapCount++;
+                        if (p1LapCount >= numLaps || p2LapCount >= numLaps) {
+                            endgame = true;
+                        }
+
                     }
                 }
 
@@ -359,20 +366,18 @@ public class Race
             }
         }
     }
-    private static class WinChecker implements Runnable
-    {
-        public void run()
-        {
-            while (endgame == false)
-            {
-//                if (asteroids.size() == 0)
-//                {
-//                    endgame = true;
-//                    System.out.println("Game Over You Win");
-//                }
+    private static class WinChecker implements Runnable {
+        public void run() {
+            while (!endgame) {
+                // Check if the selected number of laps is reached for any player
+                if (p1LapCount >= numLaps || p2LapCount >= numLaps) {
+                    endgame = true;
+                    System.out.println("Game Over. The selected number of laps is reached.");
+                }
             }
         }
     }
+
 
     // TODO make one lock rotate function which takes as input objInner,
     // objOuter, and point relative to objInner’s x, y that objOuter must
@@ -522,6 +527,7 @@ public class Race
 
     private static class StartGame implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+
             endgame = true;
             upPressed = false;
             downPressed = false;
@@ -622,7 +628,7 @@ public class Race
         )) {
             ret = true;
         }
-//        System.out.println();
+//        System.out.println(); //TODO: Uncomment this to allow them to explode
         return ret;
     }
 
